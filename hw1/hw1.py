@@ -4,7 +4,7 @@ import numpy as np
 import sys
 import time
 
-pathsep = "\\\\"
+pathsep = "/"
 
 def SwapRB(imgs):
     for img in imgs:
@@ -256,15 +256,22 @@ def Prob2():
     if impnoise is None:
         sys.exit("Can't open {}".format(imgpath))
 
-    lowpassfilter = np.array([[1, 1, 1, 7, 1, 1, 1], [1, 1, 1, 7, 1, 1, 1], [1, 1, 1, 7, 1, 1, 1], [7, 7, 7, 49, 7, 7, 7], 
-                              [1, 1, 1, 7, 1, 1, 1], [1, 1, 1, 7, 1, 1, 1], [1, 1, 1, 7, 1, 1, 1]]) / 169
+    lowpassfilter = np.array([[1., 1., 1., 7., 1., 1., 1.], [1., 1., 1., 7., 1., 1., 1.], [1., 1., 1., 7., 1., 1., 1.], [7., 7., 7., 49., 7., 7., 7.], 
+                              [1., 1., 1., 7., 1., 1., 1.], [1., 1., 1., 7., 1., 1., 1.], [1., 1., 1., 7., 1., 1., 1.]]) / 169
+    # lowpassfilter2 = np.array([[1.,3.,1.],[3.,9.,3.],[1.,3.,1.]]) / 25
     cleanuni = Conv(uninoise, lowpassfilter)
     cv.imwrite(pathsep.join([".", "result10.png"]), cleanuni)
     print("Uniform noise\nPSNR : {0} -> {1}".format(Psnr(img, uninoise), Psnr(img, cleanuni)))
+    # lowpass3x3 = Conv(uninoise, lowpassfilter2)
+    # cv.imwrite(pathsep.join([".", "lowpass3x3.png"]), lowpass3x3)
+    # print("Uniform noise\nPSNR : {0} -> {1}".format(Psnr(img, uninoise), Psnr(img, lowpass3x3)))
     
     cleanimp = MedianFilter(impnoise, (5, 5))
     cv.imwrite(pathsep.join([".", "result11.png"]), cleanimp)
     print("Impulse noise\nPSNR : {0} -> {1}".format(Psnr(img, impnoise), Psnr(img, cleanimp)))
+    # imp3x3 = MedianFilter(impnoise, (3,3))
+    # cv.imwrite(pathsep.join([".", "imp3x3.png"]), imp3x3)
+    # print("Impulse noise\nPSNR : {0} -> {1}".format(Psnr(img, impnoise), Psnr(img, imp3x3)))
 
 WarnUp()
 Prob1()

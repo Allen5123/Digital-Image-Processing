@@ -1,5 +1,3 @@
-from select import select
-from turtle import update
 import cv2 as cv
 from matplotlib import pyplot as plt
 import numpy as np
@@ -9,7 +7,7 @@ from numba import jit
 import math
 import time
 
-pathsep = "\\\\"
+pathsep = "/"
 
 @jit
 def ZeroPadding(img, ksize):
@@ -319,7 +317,8 @@ def Prob2():
     if sample2 is None:
         sys.exit("Can't open {}".format(pathsep.join(["hw3_sample_images", "sample2.png"])))
     # featurevectors = LawsMethod(sample2, Mean, (15, 15), [0,1,3,4,6,7])
-    featurevectors = LawsMethod(sample2, Mean, (15, 15), [0,2,5])
+    # featurevectors = LawsMethod(sample2, Mean, (15, 15), [0,2,5])
+    featurevectors = LawsMethod(sample2, Mean, (15, 15), [0,2,6])
     numofcluster = 4
     assignment, centers = Kmeans(featurevectors.reshape((m * n, featurevectors.shape[2])).T, numofcluster, OneNorm)
     assignment = assignment.reshape((m, n, numofcluster))
@@ -332,7 +331,8 @@ def Prob2():
                     result6[i,j] = colors[k]
                     break
     cv.imwrite(pathsep.join([".", "result6.png"]), result6)
-    result7 = Improve(result6.copy(), 940, featurevectors, centers, colors, OneNorm)
+    result7 = Improve(result6.copy(), 970, featurevectors, centers, colors, OneNorm)
     cv.imwrite(pathsep.join([".", "result7.png"]), result7)
-# Prob1()
+
+Prob1()
 Prob2()
