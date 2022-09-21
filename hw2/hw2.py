@@ -5,7 +5,7 @@ import sys
 import math
 import time
 
-pathsep = "\\\\"
+pathsep = "/"
 
 def Padding(img, kernel):
     m, n = img.shape
@@ -424,7 +424,7 @@ def Improve(img):
     # plt.imshow(MedianFilter(img, (3, 3)), cmap="gray")
     # plt.subplot(132), plt.title("Sobel"), plt.axis("off")
     # plt.imshow(ret, cmap="gray")
-    # ret = MedianFilter(ret, (3, 3))
+    ret = MedianFilter(ret, (3, 3))
     # plt.subplot(133), plt.title("Sobel and Median"), plt.axis("off")
     # plt.imshow(ret, cmap="gray")
     # plt.show()
@@ -447,7 +447,7 @@ def Prob2():
     res7 = top | bottom | left | right
     cv.imwrite(pathsep.join([".", "result7.png"]), res7)
     
-    sample6 = cv.imread(pathsep.join([".", "hw2_sample_images", "sample6.png"]), cv.IMREAD_GRAYSCALE)
+    # sample6 = cv.imread(pathsep.join([".", "hw2_sample_images", "sample6.png"]), cv.IMREAD_GRAYSCALE)
     # plt.subplot(111), plt.imshow(sample6, cmap="gray")
     # plt.plot([0,sample6.shape[1]-1],[55,55])
     # plt.plot([0,sample6.shape[1]-1],[315,315])
@@ -462,15 +462,15 @@ def Prob2():
     # plt.plot(564.+20.*np.sin(2*np.pi/149*(line-75)), line, lw=1.5)
     # plt.show()
 
-    x0, y0, wx, wy, phix, phiy = 30., 20., 2*math.pi/149., 2*math.pi/149., 0., 0.
-    top, mid, bottom, left, right = (sample6.shape[0]-55), (sample6.shape[0]-315), (sample6.shape[0]-510), 42, 564
-    line = np.linspace(0, sample6.shape[1]-1, 5)
+    x0, y0, wx, wy, phix, phiy = 30., 20., 2*math.pi/149., 2*math.pi/149., 36., -75.
+    top, mid, bottom, left, right = (sample5.shape[0]-55), (sample5.shape[0]-315), (sample5.shape[0]-510), 42, 564
+    line = np.linspace(0, sample5.shape[1]-1, 10)
     ones = np.ones(len(line))
     culist = np.concatenate((line, line, line, left*ones, right*ones))
     cvlist = np.concatenate((top*ones, mid*ones, bottom*ones, line, line))
     cxlist = np.concatenate((line, line, line, left+y0*np.sin(wy*(line+phiy)), right+y0*np.sin(wy*(line+phiy))))
     cylist = np.concatenate((top+x0*np.sin(wx*(line+phix)), mid+x0*np.sin(wx*(line+phix)), bottom+x0*np.sin(wx*(line+phix)), line, line))
-    res8 = SineWrap(sample6, culist, cvlist, cxlist, cylist, wx, wy, phix, phiy)
+    res8 = SineWrap(sample5, culist, cvlist, cxlist, cylist, wx, wy, phix, phiy)
     cv.imwrite(pathsep.join([".", "result8.png"]), res8)
 
 Prob1()
