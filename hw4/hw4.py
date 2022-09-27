@@ -1,4 +1,3 @@
-from locale import normalize
 import cv2 as cv
 from matplotlib import pyplot as plt
 import numpy as np
@@ -105,4 +104,85 @@ def Prob1():
     atkinson = ErrorDiffusion(sample1, np.array([[0.,0.,0.,0.,0.],[0.,0.,0.,0.,0.],[0.,0.,0.,1.,1.],[0.,1.,1.,1.,0.],[0.,0.,1.,0.,0.]])/8.)
     cv.imwrite(pathsep.join([".","atkinson.png"]), atkinson)
 
+def Sampling(img, tx, ty):
+    m, n = img.shape
+    sampleimg = []
+    for i in range(0, m, tx):
+        sampleimg.append([])
+        for j in range(0, n, ty):
+            sampleimg[-1].append(img[i,j])
+    imghat = np.fft.fft2(sampleimg)
+    # plt.imshow(np.log10(np.abs(imghat))), plt.colorbar()
+    # plt.show()
+    return np.fft.ifft2(imghat).real
+
+def Padding(img, kernel):
+    m, n = img.shape
+    s, t = kernel.shape
+    #mirror padding
+    padded = np.zeros((m+(s//2)*2, n+(t//2)*2), dtype=img.dtype)
+    padded[s//2:s//2+m, t//2:t//2+n] = img[:,:]
+    padded[:s//2,t//2:t//2+n] = padded[(s//2)*2:s//2:-1,t//2:t//2+n]
+    padded[-1:-(s//2+1):-1,t//2:t//2+n] = padded[-((s//2)*2+1):-(s//2+1),t//2:t//2+n]
+    padded[:,:t//2] = padded[:,2*(t//2):t//2:-1]
+    padded[:,-1:-(t//2+1):-1] = padded[:,-(2*(t//2)+1):-(t//2+1)]
+    return padded
+
+def Conv(img, kernel):
+    m, n = img.shape
+    s, t = kernel.shape
+    ret = np.zeros_like(img)
+    padded = Padding(img, kernel)
+    for i in range(m):
+        for j in range(n):
+            for k in range(-(s//2), s//2+1):
+                for l in range(-(t//2), t//2+1):
+                    ret[i,j] += padded[s//2+i+k,t//2+j+l] * kernel[s//2+k,t//2+l]
+    return ret
+
+def Gaussian(sz):
+    if sz % 2 == 0:
+        sz += 1
+    gauss = np.empty((sz, sz))
+    sigma = sz / 6
+    summ = 0
+    for i in range(sz):
+        for j in range(sz):
+            gauss[i,j] = math.exp(-((i-sz//2)**2+(j-sz//2)**2) / (2*(sigma**2)))        
+            summ += gauss[i,j]
+    gauss /= summ
+    return gauss
+
+def Unsharp(img, gsz, c):
+    filted = Conv(img, Gaussian(gsz))
+    m, n = img.shape
+    ret = np.empty_like(img)
+    for i in range(m):
+        for j in range(n):
+            ret[i,j] = c / (2 * c - 1) * img[i,j] - (1 - c) / (2 * c - 1) * filted[i,j]
+    return ret
+
+def UnsharpInFreq(img):
+    imghat = np.fft.fft2(img)
+    imghatunsharp = Unsharp(imghat, 5, 18./30.)
+    plt.subplot(121)
+    plt.imshow(np.log10(np.abs(imghat)), cmap="gray"), plt.axis("off")
+    plt.subplot(122)
+    plt.imshow(np.log10(np.abs(imghatunsharp)), cmap="gray"), plt.axis("off")
+    plt.show()
+    return np.fft.ifft2(imghatunsharp).real
+
+def Prob2():
+    sample2 = cv.imread(pathsep.join([".", "hw4_sample_images", "sample2.png"]), cv.IMREAD_GRAYSCALE)
+    if sample2 is None:
+        sys.exit("Can't open {}".format(pathsep.join(["hw4_sample_images", "sample2.png"])))
+    sample3 = cv.imread(pathsep.join([".", "hw4_sample_images", "sample3.png"]), cv.IMREAD_GRAYSCALE)
+    if sample3 is None:
+        sys.exit("Can't open {}".format(pathsep.join(["hw4_sample_images", "sample3.png"])))
+    result5 = Sampling(sample2, 3, 3)
+    cv.imwrite(pathsep.join([".", "result5.png"]), result5)
+    result6 = UnsharpInFreq(sample3)
+    cv.imwrite(pathsep.join([".", "result6.png"]), result6)
+
 Prob1()
+Prob2()
