@@ -2,7 +2,6 @@ import cv2 as cv
 from matplotlib import pyplot as plt
 import numpy as np
 import sys
-import random
 from numba import jit
 import math
 import time
@@ -141,8 +140,6 @@ def Conv(img, kernel):
     return ret
 
 def Gaussian(sz):
-    if sz % 2 == 0:
-        sz += 1
     gauss = np.empty((sz, sz))
     sigma = sz / 6
     summ = 0
@@ -153,18 +150,10 @@ def Gaussian(sz):
     gauss /= summ
     return gauss
 
-def Unsharp(img, gsz, c):
-    filted = Conv(img, Gaussian(gsz))
-    m, n = img.shape
-    ret = np.empty_like(img)
-    for i in range(m):
-        for j in range(n):
-            ret[i,j] = c / (2 * c - 1) * img[i,j] - (1 - c) / (2 * c - 1) * filted[i,j]
-    return ret
-
-def UnsharpInFreq(img):
-    imghat = np.fft.fft2(img)
-    imghatunsharp = Unsharp(imghat, 5, 18./30.)
+def UnsharpInFreq(img, gsz, c):
+    imghat, gaussianhat = np.fft.fft2(img), np.fft.fft2(Gaussian(gsz))
+    filted = imghat * gaussianhat
+    imghatunsharp = c / (2 * c - 1) * imghat - (1 - c) / (2 * c - 1) * filted
     plt.subplot(121)
     plt.imshow(np.log10(np.abs(imghat)), cmap="gray"), plt.axis("off")
     plt.subplot(122)
@@ -181,7 +170,7 @@ def Prob2():
         sys.exit("Can't open {}".format(pathsep.join(["hw4_sample_images", "sample3.png"])))
     result5 = Sampling(sample2, 3, 3)
     cv.imwrite(pathsep.join([".", "result5.png"]), result5)
-    result6 = UnsharpInFreq(sample3)
+    result6 = UnsharpInFreq(sample3, sample3.shape[0], 18./30.)
     cv.imwrite(pathsep.join([".", "result6.png"]), result6)
 
 Prob1()
