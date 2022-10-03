@@ -94,6 +94,10 @@ def Prob1():
         sys.exit("Can't open {}".format(pathsep.join(["hw4_sample_images", "sample1.png"])))
     res1 = Dithering(sample1, 2)
     cv.imwrite(pathsep.join([".", "result1.png"]), res1)
+    dither64 = Dithering(sample1, 64)
+    cv.imwrite(pathsep.join([".", "dither64.png"]), dither64)
+    dither128 = Dithering(sample1, 128)
+    cv.imwrite(pathsep.join([".", "dither128.png"]), dither128)
     res2 = Dithering(sample1, 256)
     cv.imwrite(pathsep.join([".", "result2.png"]), res2)
     res3 = ErrorDiffusion(sample1, np.array([[0.,0.,0.],[0.,0.,7.],[3.,5.,1.]])/16.)
@@ -111,8 +115,11 @@ def Sampling(img, tx, ty):
         for j in range(0, n, ty):
             sampleimg[-1].append(img[i,j])
     imghat = np.fft.fft2(sampleimg)
-    # plt.imshow(np.log10(np.abs(imghat))), plt.colorbar()
-    # plt.show()
+    plt.subplot(121)
+    plt.imshow(np.log10(np.abs(np.fft.fft2(img)))), plt.colorbar()
+    plt.subplot(122)
+    plt.imshow(np.log10(np.abs(imghat))), plt.colorbar()
+    plt.show()
     return np.fft.ifft2(imghat).real
 
 def Padding(img, kernel):
@@ -155,9 +162,9 @@ def UnsharpInFreq(img, gsz, c):
     filted = imghat * gaussianhat
     imghatunsharp = c / (2 * c - 1) * imghat - (1 - c) / (2 * c - 1) * filted
     plt.subplot(121)
-    plt.imshow(np.log10(np.abs(imghat)), cmap="gray"), plt.axis("off")
+    plt.imshow(np.log10(np.abs(imghat))), plt.axis("off")
     plt.subplot(122)
-    plt.imshow(np.log10(np.abs(imghatunsharp)), cmap="gray"), plt.axis("off")
+    plt.imshow(np.log10(np.abs(imghatunsharp))), plt.axis("off")
     plt.show()
     return np.fft.ifft2(imghatunsharp).real
 
@@ -170,6 +177,10 @@ def Prob2():
         sys.exit("Can't open {}".format(pathsep.join(["hw4_sample_images", "sample3.png"])))
     result5 = Sampling(sample2, 3, 3)
     cv.imwrite(pathsep.join([".", "result5.png"]), result5)
+    sample2_2 = Sampling(sample2, 2, 2)
+    cv.imwrite(pathsep.join([".", "sample2_2.png"]), sample2_2)
+    sample4_4 = Sampling(sample2, 4, 4)
+    cv.imwrite(pathsep.join([".", "sample4_4.png"]), sample4_4)
     result6 = UnsharpInFreq(sample3, sample3.shape[0], 18./30.)
     cv.imwrite(pathsep.join([".", "result6.png"]), result6)
 
