@@ -10,7 +10,7 @@ pathsep = "/"
 
 def AddNoise(img):
     m, n = img.shape
-    mean, var = 50., 10.0
+    mean, var = 0, 3.0
     gaus = np.random.normal(mean, var, m * n).reshape(m, n)
     ret = img.copy()
     for i in range(m):
@@ -115,11 +115,13 @@ def Sampling(img, tx, ty):
         for j in range(0, n, ty):
             sampleimg[-1].append(img[i,j])
     imghat = np.fft.fft2(sampleimg)
+    imghat = np.fft.fftshift(imghat)
     plt.subplot(121)
     plt.imshow(np.log10(np.abs(np.fft.fft2(img)))), plt.colorbar()
     plt.subplot(122)
     plt.imshow(np.log10(np.abs(imghat))), plt.colorbar()
     plt.show()
+    imghat = np.fft.ifftshift(imghat)
     return np.fft.ifft2(imghat).real
 
 def Padding(img, kernel):
@@ -148,7 +150,7 @@ def Conv(img, kernel):
 
 def Gaussian(sz):
     gauss = np.empty((sz, sz))
-    sigma = sz / 6
+    sigma = 200.
     summ = 0
     for i in range(sz):
         for j in range(sz):
@@ -159,13 +161,21 @@ def Gaussian(sz):
 
 def UnsharpInFreq(img, gsz, c):
     imghat, gaussianhat = np.fft.fft2(img), np.fft.fft2(Gaussian(gsz))
+    imghat, gaussianhat = np.fft.fftshift(imghat), np.fft.fftshift(gaussianhat)
     filted = imghat * gaussianhat
     imghatunsharp = c / (2 * c - 1) * imghat - (1 - c) / (2 * c - 1) * filted
-    plt.subplot(121)
+    plt.subplot(121), plt.title("Origin")
     plt.imshow(np.log10(np.abs(imghat))), plt.axis("off")
-    plt.subplot(122)
+    plt.subplot(122), plt.title("Unsharp Masking")
     plt.imshow(np.log10(np.abs(imghatunsharp))), plt.axis("off")
     plt.show()
+    diff = np.abs(imghatunsharp) - np.abs(imghat)
+    print(diff)
+    diff[diff >= 0] = 255
+    diff[diff < 0] = 0
+    plt.imshow(diff, cmap="gray")
+    plt.show()
+    imghatunsharp = np.fft.ifftshift(imghatunsharp)
     return np.fft.ifft2(imghatunsharp).real
 
 def Prob2():
@@ -184,5 +194,6 @@ def Prob2():
     result6 = UnsharpInFreq(sample3, sample3.shape[0], 18./30.)
     cv.imwrite(pathsep.join([".", "result6.png"]), result6)
 
-Prob1()
+
+# Prob1()
 Prob2()
